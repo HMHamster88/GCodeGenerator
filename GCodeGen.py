@@ -1,4 +1,12 @@
 import math
+
+def drange(start, end, step):
+    while (step > 0 and start <= end) or (step < 0 and start >= end):
+        yield start
+        start += step
+    if (step > 0 and start - step < end) or (step < 0 and start + step > end):
+    	yield end;
+
 class v2:
 	x = 0
 	y = 0
@@ -22,7 +30,7 @@ def  v2_from_angle(angle):
 class GCodeGenerator:
 	horizontal_feed = 100
 	vertial_feed = 100
-	safety_height = 15
+	safety_height = 6
 	def __init__(self, file):
 		self.file = file
 
@@ -44,6 +52,22 @@ class GCodeGenerator:
 	def go_to_arc_start(self, center, radius, start_angle, stop_angle, cw):
 		start = center + v2_from_angle(start_angle) * radius;
 		self.go_to(start)
+
+	def go_to_circle_start(self, center, radius, cw):
+		if(cw):
+			self.go_to_arc_start(center, radius, math.pi * 2, 0, cw)
+		else:
+			self.go_to_arc_start(center, radius, 0, math.pi * 2, cw)
+
+	def horizontal_circle(self, center, radius, cw):
+		if(cw):
+			self.horizontal_arc(center, radius, math.pi * 2, 0, cw)
+		else:
+			self.horizontal_arc(center, radius, 0, math.pi * 2, cw)
+
+	def horizontal_ring(self, center, radius1, radius2, step, cw):
+		for radius in drange(radius1, radius2, step):
+			self.horizontal_circle(center, radius, cw)
 
 	def horizontal_arc(self, center, radius, start_angle, stop_angle, cw):
 		start = center + v2_from_angle(start_angle) * radius;
